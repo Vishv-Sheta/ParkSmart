@@ -1,9 +1,6 @@
 version: '3.8'
 
 services:
-  # ==========================================================
-  # Infrastructure: MongoDB (Multi-database per service)
-  # ==========================================================
   mongodb:
     image: mongo:6.0
     container_name: parksmart-mongodb
@@ -15,9 +12,7 @@ services:
     networks:
       - parksmart-net
 
-  # ==========================================================
-  # Infrastructure: Mongo Express (Web Database Viewer)
-  # ==========================================================
+  # Mongo Express (Web Database Viewer)
   mongo-express:
     image: mongo-express:latest
     container_name: parksmart-mongo-express
@@ -33,9 +28,7 @@ services:
     networks:
       - parksmart-net
 
-  # ==========================================================
-  # Infrastructure: RabbitMQ (AMQP Event Broker + Management)
-  # ==========================================================
+  # RabbitMQ (AMQP Event Broker + Management)
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: parksmart-rabbitmq
@@ -46,9 +39,7 @@ services:
     networks:
       - parksmart-net
 
-  # ==========================================================
   # Service 1: Authentication & User Management (Node.js)
-  # ==========================================================
   service-1-auth:
     build:
       context: ./services/service-1-auth
@@ -67,9 +58,7 @@ services:
     networks:
       - parksmart-net
 
-  # ==========================================================
   # Service 2: AI ANPR & License Plate OCR (Python)
-  # ==========================================================
   service-2-ai-vision:
     build:
       context: ./services/service-2-ai-vision
@@ -87,9 +76,7 @@ services:
     networks:
       - parksmart-net
 
-  # ==========================================================
   # Service 3: Slot Engine & Sensor Telemetry (C++17)
-  # ==========================================================
   service-3-slot-engine:
     build:
       context: ./services/service-3-slot-engine
@@ -100,9 +87,7 @@ services:
     networks:
       - parksmart-net
 
-  # ==========================================================
   # Service 4: Reservation & Booking Lifecycle (Node.js)
-  # ==========================================================
   service-4-reservation:
     build:
       context: ./services/service-4-reservation
@@ -121,9 +106,7 @@ services:
     networks:
       - parksmart-net
 
-  # ==========================================================
   # Service 5: Dynamic Pricing & Demand Analytics (Python)
-  # ==========================================================
   service-5-pricing-analytics:
     build:
       context: ./services/service-5-pricing-analytics
@@ -141,9 +124,7 @@ services:
     networks:
       - parksmart-net
 
-  # ==========================================================
   # API Gateway: Reverse Proxy & Unified Routing
-  # ==========================================================
   gateway:
     build:
       context: ./gateway
@@ -167,9 +148,7 @@ services:
     networks:
       - parksmart-net
 
-  # ==========================================================
   # Frontend: React Application
-  # ==========================================================
   frontend:
     build:
       context: ./frontend
