@@ -1,0 +1,192 @@
+version: '3.8'
+
+services:
+  # ==========================================================
+  # Infrastructure: MongoDB (Multi-database per service)
+  # ==========================================================
+  mongodb:
+    image: mongo:6.0
+    container_name: parksmart-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - parksmart-net
+
+  # ==========================================================
+  # Infrastructure: Mongo Express (Web Database Viewer)
+  # ==========================================================
+  mongo-express:
+    image: mongo-express:latest
+    container_name: parksmart-mongo-express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_BASICAUTH=false
+    depends_on:
+      - mongodb
+    networks:
+      - parksmart-net
+
+  # ==========================================================
+  # Infrastructure: RabbitMQ (AMQP Event Broker + Management)
+  # ==========================================================
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: parksmart-rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"     # AMQP protocol
+      - "15672:15672"   # Management Web UI (guest / guest)
+    networks:
+      - parksmart-net
+
+  # ==========================================================
+  # Service 1: Authentication & User Management (Node.js)
+  # ==========================================================
+  service-1-auth:
+    build:
+      context: ./services/service-1-auth
+    container_name: parksmart-service-1-auth
+    restart: always
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - MONGODB_URI=mongodb://mongodb:27017/parksmart_auth_db
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - JWT_SECRET=parksmart_distributed_secret_key_2026
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - parksmart-net
+
+  # ==========================================================
+  # Service 2: AI ANPR & License Plate OCR (Python)
+  # ==========================================================
+  service-2-ai-vision:
+    build:
+      context: ./services/service-2-ai-vision
+    container_name: parksmart-service-2-ai-vision
+    restart: always
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+      - MONGODB_URI=mongodb://mongodb:27017/parksmart_ai_db
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - parksmart-net
+
+  # ==========================================================
+  # Service 3: Slot Engine & Sensor Telemetry (C++17)
+  # ==========================================================
+  service-3-slot-engine:
+    build:
+      context: ./services/service-3-slot-engine
+    container_name: parksmart-service-3-slot-engine
+    restart: always
+    ports:
+      - "5003:5003"
+    networks:
+      - parksmart-net
+
+  # ==========================================================
+  # Service 4: Reservation & Booking Lifecycle (Node.js)
+  # ==========================================================
+  service-4-reservation:
+    build:
+      context: ./services/service-4-reservation
+    container_name: parksmart-service-4-reservation
+    restart: always
+    ports:
+      - "5004:5004"
+    environment:
+      - PORT=5004
+      - MONGODB_URI=mongodb://mongodb:27017/parksmart_booking_db
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - JWT_SECRET=parksmart_distributed_secret_key_2026
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - parksmart-net
+
+  # ==========================================================
+  # Service 5: Dynamic Pricing & Demand Analytics (Python)
+  # ==========================================================
+  service-5-pricing-analytics:
+    build:
+      context: ./services/service-5-pricing-analytics
+    container_name: parksmart-service-5-pricing-analytics
+    restart: always
+    ports:
+      - "5005:5005"
+    environment:
+      - PORT=5005
+      - MONGODB_URI=mongodb://mongodb:27017/parksmart_analytics_db
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - parksmart-net
+
+  # ==========================================================
+  # API Gateway: Reverse Proxy & Unified Routing
+  # ==========================================================
+  gateway:
+    build:
+      context: ./gateway
+    container_name: parksmart-gateway
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - SERVICE_AUTH_URL=http://service-1-auth:5001
+      - SERVICE_AI_URL=http://service-2-ai-vision:5002
+      - SERVICE_SLOT_URL=http://service-3-slot-engine:5003
+      - SERVICE_RESERVATION_URL=http://service-4-reservation:5004
+      - SERVICE_ANALYTICS_URL=http://service-5-pricing-analytics:5005
+    depends_on:
+      - service-1-auth
+      - service-2-ai-vision
+      - service-3-slot-engine
+      - service-4-reservation
+      - service-5-pricing-analytics
+    networks:
+      - parksmart-net
+
+  # ==========================================================
+  # Frontend: React Application
+  # ==========================================================
+  frontend:
+    build:
+      context: ./frontend
+    container_name: parksmart-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000/api
+    depends_on:
+      - gateway
+    networks:
+      - parksmart-net
+
+networks:
+  parksmart-net:
+    driver: bridge
+
+volumes:
+  mongo_data:
