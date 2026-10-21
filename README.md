@@ -156,15 +156,3 @@ When a user completes a parking slot reservation:
 To prevent duplicate bookings when multiple drivers attempt to claim the same parking slot at the same second:
 1. **Pre-Booking Slot Overlay**: `GET /api/parking/slots/:locationId` overlays active reservations onto the C++ slot grid. Booked slots receive `status: 'reserved'` and are rendered unclickable (`cursor: not-allowed`).
 2. **Atomic Conflict Detection**: `POST /api/reservations` validates time-window overlap against active bookings in MongoDB before committing. Conflicting requests are immediately rejected with HTTP `409 Conflict`.
-
----
-
-## Presentation & Defense Guides (4-Member Team)
-
-Dedicated presentation notes and viva defense guides for each team member are available in the `docs/team_guides/` directory:
-
-* [Member 1: System Architecture, Gateway & C++ Engine](docs/team_guides/Student_1_System_Architecture_and_CPP_Engine.md)
-* [Member 2: Node.js Auth & Reservation Engine](docs/team_guides/Student_2_NodeJS_Auth_and_Reservation_Engine.md)
-* [Member 3: Python AI Vision & ANPR Pipeline](docs/team_guides/Student_3_Python_AI_Vision_ANPR_Service.md)
-* [Member 4: Dynamic Pricing, Analytics & Frontend UI](docs/team_guides/Student_4_Python_Analytics_and_Frontend.md)
-* [Master Presentation Guide](docs/team_guides/README.md)
