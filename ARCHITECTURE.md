@@ -92,13 +92,3 @@
 - All 5 polyglot services, RabbitMQ with management dashboard, MongoDB, API Gateway, and React frontend are encapsulated into isolated Docker containers with bridging network `parksmart-net`.
 
 ---
-
-### 5. Algorithms & Mathematical Formulations
-
-#### 1. Optimal Slot Allocation Algorithm (Service 3 - C++)
-$$\text{Cost}(i) = \sqrt{(x_i - x_{\text{gate}})^2 + (y_i - y_{\text{gate}})^2} + \alpha \cdot \text{BayTypePenalty}$$
-* Time Complexity: $\mathcal{O}(N)$ where $N$ is total bays, completed in $<50\mu\text{s}$ in native C++.
-
-#### 2. Price Elasticity Dynamic Pricing Formula (Service 5 - Python)
-$$P(t) = P_{\text{base}} \times \left(1 + 0.60 \times \frac{\text{Occupancy}(t)}{\text{Capacity}}\right) \times \gamma_{\text{hour}}$$
-* $\gamma_{\text{hour}} = 1.25$ during peak rush hours (8-10 AM, 5-8 PM); $1.00$ otherwise.
