@@ -1,9 +1,9 @@
 # ParkSmart: Distributed Smart Parking & Reservation System
-## System Architecture & Technical Defense Document (B.Tech Computer Science & Engineering)
+## System Architecture Document
 
 ---
 
-### 1. Executive Summary
+### 1. Summary
 **ParkSmart** is an event-driven, polyglot distributed microservices architecture designed to solve real-world urban parking congestion. The platform replaces traditional monolithic designs with five decentralized services written across **Node.js, Python, and C++**, adhering to the **Database-per-Service** pattern, communicating asynchronously via **RabbitMQ**, containerized with **Docker**, and exposed via a unified **API Gateway**.
 
 ---
@@ -51,7 +51,7 @@
 
 ---
 
-### 3. Service Breakdown & Polyglot Rationale
+### 3. Service Breakdown
 
 | Service | Technology Stack | Port | Database (Isolated) | Engineering & Academic Justification |
 | :--- | :--- | :--- | :--- | :--- |
@@ -102,16 +102,3 @@ $$\text{Cost}(i) = \sqrt{(x_i - x_{\text{gate}})^2 + (y_i - y_{\text{gate}})^2} 
 #### 2. Price Elasticity Dynamic Pricing Formula (Service 5 - Python)
 $$P(t) = P_{\text{base}} \times \left(1 + 0.60 \times \frac{\text{Occupancy}(t)}{\text{Capacity}}\right) \times \gamma_{\text{hour}}$$
 * $\gamma_{\text{hour}} = 1.25$ during peak rush hours (8-10 AM, 5-8 PM); $1.00$ otherwise.
-
----
-
-### 6. Defense & Viva Guide (For College Examiners)
-
-**Q1: Why did you choose polyglot microservices instead of doing everything in one language?**
-* **Answer**: In real-world enterprise architectures, a single language is never optimal for every task. Node.js is superior for high-throughput, non-blocking asynchronous REST I/O. Python is the world standard for computer vision (OpenCV) and numerical analytics. C++ is essential for low-latency systems programming, edge hardware sensor simulation, and deterministic memory allocation.
-
-**Q2: What happens if RabbitMQ goes down?**
-* **Answer**: The microservices implement graceful degradation: each service has an in-memory event fallback buffer, allowing core booking and authentication to remain available while queued sync actions retry automatically.
-
-**Q3: How is data consistency maintained without distributed ACID transactions?**
-* **Answer**: We follow the **Eventual Consistency** paradigm. The Reservation Service acts as the transaction coordinator, emitting domain events over RabbitMQ. If a cancellation occurs, compensating events (`reservation.cancelled`) revert the state across the C++ slot engine and AI whitelist.
